@@ -55,7 +55,7 @@ export default function AuthPage() {
                 Crea
               </span>
               <span className="font-rubik-glitch bg-gradient-to-r from-[hsl(24_96%_55%)] to-[hsl(63_100%_73%)] bg-clip-text text-transparent">
-                TV
+                TV{" "}
               </span>
               <span className="font-rubik-glitch bg-gradient-to-r from-[hsl(265_83%_57%)] to-[hsl(203_92%_75%)] bg-clip-text text-transparent">
                 Support
