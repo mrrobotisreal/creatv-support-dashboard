@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
+import logo from "@/assets/logo.png";
 import { useSupportSession } from "@/hooks/use-support-session";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -36,9 +37,19 @@ export default function AuthPage() {
     <main className="flex min-h-screen items-center justify-center px-4">
       <form className="w-full max-w-md space-y-5 rounded-2xl border border-border bg-card p-6 shadow-2xl" onSubmit={submit}>
         <div>
-          <p className="text-sm uppercase tracking-[0.25em] text-muted-foreground">CreaTV</p>
+          <div className="mb-8 flex items-center justify-center gap-3">
+            <img src={logo} alt="CreaTV logo" className="h-16 w-16" />
+            <h1 className="flex items-center gap-0.25 text-4xl font-medium">
+              <span className="font-rubik-glitch bg-gradient-to-r from-[hsl(265_83%_57%)] to-[hsl(203_92%_75%)] bg-clip-text text-transparent">
+                Crea
+              </span>
+              <span className="font-rubik-glitch bg-gradient-to-r from-[hsl(24_96%_55%)] to-[hsl(63_100%_73%)] bg-clip-text text-transparent">
+                TV
+              </span>
+            </h1>
+          </div>
           <h1 className="mt-2 text-2xl font-bold">Support dashboard sign in</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Use your authorized Supabase account to manage support tickets.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Use your authorized account to manage support tickets.</p>
         </div>
         <label className="grid gap-2 text-sm">
           Email

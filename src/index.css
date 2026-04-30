@@ -34,3 +34,9 @@
     @apply w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-primary transition focus:ring-2;
   }
 }
+
+@layer utilities {
+  .font-rubik-glitch {
+    font-family: 'Rubik Glitch', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  }
+}

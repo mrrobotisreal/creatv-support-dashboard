@@ -1,6 +1,7 @@
-import { LifeBuoy, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 
+import logo from "@/assets/logo.png";
 import { useSupportSession } from "@/hooks/use-support-session";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -19,13 +20,16 @@ export function SupportShell() {
       <header className="sticky top-0 z-20 border-b border-border bg-card/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
           <Link to="/" className="flex items-center gap-3">
-            <span className="rounded-xl bg-primary/20 p-2 text-primary">
-              <LifeBuoy className="h-5 w-5" />
+            <img src={logo} alt="CreaTV logo" className="h-12 w-12" />
+            <span className="flex items-center gap-0.25 text-2xl font-medium">
+              <span className="font-rubik-glitch bg-gradient-to-r from-[hsl(265_83%_57%)] to-[hsl(203_92%_75%)] bg-clip-text text-transparent">
+                Crea
+              </span>
+              <span className="font-rubik-glitch bg-gradient-to-r from-[hsl(24_96%_55%)] to-[hsl(63_100%_73%)] bg-clip-text text-transparent">
+                TV
+              </span>
             </span>
-            <span>
-              <span className="block text-sm text-muted-foreground">CreaTV</span>
-              <span className="font-semibold">Support Dashboard</span>
-            </span>
+            <span className="hidden text-sm font-semibold text-muted-foreground sm:inline">Support Dashboard</span>
           </Link>
           <div className="flex items-center gap-3 text-sm">
             <span className="hidden text-muted-foreground sm:inline">{user?.email}</span>
