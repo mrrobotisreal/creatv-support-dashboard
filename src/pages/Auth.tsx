@@ -57,6 +57,9 @@ export default function AuthPage() {
               <span className="font-rubik-glitch bg-gradient-to-r from-[hsl(24_96%_55%)] to-[hsl(63_100%_73%)] bg-clip-text text-transparent">
                 TV
               </span>
+              <span className="font-rubik-glitch bg-gradient-to-r from-[hsl(265_83%_57%)] to-[hsl(203_92%_75%)] bg-clip-text text-transparent">
+                Support
+              </span>
             </h1>
           </div>
           <h1 className="mt-2 text-2xl font-bold">Support dashboard sign in</h1>
