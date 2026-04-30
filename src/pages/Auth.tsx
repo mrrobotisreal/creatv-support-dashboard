@@ -2,9 +2,10 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import logo from "@/assets/logo.png";
+import icon from "@/assets/support_icon.png";
 import { useSupportSession } from "@/hooks/use-support-session";
 import { supabase } from "@/integrations/supabase/client";
+import { getCurrentSupportTech } from "@/lib/supportApi";
 
 export default function AuthPage() {
   const navigate = useNavigate();
@@ -25,11 +26,21 @@ export default function AuthPage() {
       setError(error?.message || "Unable to sign in.");
       return;
     }
-    setUser({
-      id: data.session.user.id,
-      email: data.session.user.email,
-      accessToken: data.session.access_token,
-    });
+    try {
+      const tech = await getCurrentSupportTech(data.session.access_token);
+      setUser({
+        id: data.session.user.id,
+        email: data.session.user.email,
+        accessToken: data.session.access_token,
+        techID: tech.tech_id,
+        displayName: tech.display_name,
+        role: tech.role,
+      });
+    } catch (err) {
+      await supabase.auth.signOut();
+      setError(err instanceof Error ? err.message : "This account is not authorized for the support dashboard.");
+      return;
+    }
     navigate(searchParams.get("redirect") || "/", { replace: true });
   };
 
@@ -38,7 +49,7 @@ export default function AuthPage() {
       <form className="w-full max-w-md space-y-5 rounded-2xl border border-border bg-card p-6 shadow-2xl" onSubmit={submit}>
         <div>
           <div className="mb-8 flex items-center justify-center gap-3">
-            <img src={logo} alt="CreaTV logo" className="h-16 w-16" />
+            <img src={icon} alt="CreaTV Support icon" className="h-16 w-16" />
             <h1 className="flex items-center gap-0.25 text-4xl font-medium">
               <span className="font-rubik-glitch bg-gradient-to-r from-[hsl(265_83%_57%)] to-[hsl(203_92%_75%)] bg-clip-text text-transparent">
                 Crea

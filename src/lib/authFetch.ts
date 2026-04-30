@@ -14,11 +14,6 @@ async function resolveAccessToken(): Promise<string | null> {
   if (!session?.access_token || !session.user.email) {
     return null;
   }
-  state.setUser({
-    id: session.user.id,
-    email: session.user.email,
-    accessToken: session.access_token,
-  });
   return session.access_token;
 }
 

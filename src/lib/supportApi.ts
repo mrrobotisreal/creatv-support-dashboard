@@ -1,5 +1,5 @@
 import { authFetch } from "@/lib/authFetch";
-import type { SupportStats, TicketDetail, TicketListResponse } from "@/types/support";
+import type { SupportStats, SupportTech, TicketDetail, TicketListResponse } from "@/types/support";
 
 const BASE_URL = import.meta.env.VITE_SUPPORT_API_URL as string;
 
@@ -56,6 +56,11 @@ export async function getStats(filters: TicketFilters) {
   if (filters.endDate) url.searchParams.set("end_date", filters.endDate);
   if (filters.requestType !== "all") url.searchParams.set("request_type", filters.requestType);
   return readJson<SupportStats>(await authFetch(url));
+}
+
+export async function getCurrentSupportTech(accessToken?: string) {
+  const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
+  return readJson<SupportTech>(await authFetch(apiUrl("/support/me"), { headers }));
 }
 
 export async function getTicket(requestID: string) {

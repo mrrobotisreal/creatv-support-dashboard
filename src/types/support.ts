@@ -1,6 +1,15 @@
 export type SupportStatus = "pending" | "active" | "in_progress" | "closed" | "resolved";
 export type SupportRequestType = "question" | "help";
 
+export type SupportTech = {
+  tech_id: string;
+  supabase_user_id: string;
+  email: string;
+  display_name: string;
+  role: string;
+  status: string;
+};
+
 export type TicketSummary = {
   id: number;
   request_id: string;

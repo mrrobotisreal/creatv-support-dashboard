@@ -3,6 +3,28 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import { useSupportSession } from "@/hooks/use-support-session";
 import { supabase } from "@/integrations/supabase/client";
+import { getCurrentSupportTech } from "@/lib/supportApi";
+import type { Session } from "@supabase/supabase-js";
+
+async function verifySupportSession(session: Session | null, setUser: ReturnType<typeof useSupportSession.getState>["setUser"]) {
+  if (!session?.user.email || !session.access_token) {
+    setUser(null);
+    return;
+  }
+  try {
+    const tech = await getCurrentSupportTech(session.access_token);
+    setUser({
+      id: session.user.id,
+      email: session.user.email,
+      accessToken: session.access_token,
+      techID: tech.tech_id,
+      displayName: tech.display_name,
+      role: tech.role,
+    });
+  } catch {
+    setUser(null);
+  }
+}
 
 export function AuthGate({ children }: { children: ReactNode }) {
   const { setUser } = useSupportSession();
@@ -10,22 +32,13 @@ export function AuthGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       if (!mounted) return;
-      const session = data.session;
-      setUser(
-        session?.user.email && session.access_token
-          ? { id: session.user.id, email: session.user.email, accessToken: session.access_token }
-          : null,
-      );
+      await verifySupportSession(data.session, setUser);
       setReady(true);
     });
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(
-        session?.user.email && session.access_token
-          ? { id: session.user.id, email: session.user.email, accessToken: session.access_token }
-          : null,
-      );
+      void verifySupportSession(session, setUser);
     });
     return () => {
       mounted = false;
