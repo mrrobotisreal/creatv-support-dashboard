@@ -27,6 +27,7 @@ async function verifySupportSession(session: Session | null, setUser: ReturnType
 }
 
 export function AuthGate({ children }: { children: ReactNode }) {
+  const location = useLocation();
   const { setUser } = useSupportSession();
   const [ready, setReady] = useState(false);
 
@@ -38,13 +39,16 @@ export function AuthGate({ children }: { children: ReactNode }) {
       setReady(true);
     });
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (location.pathname.startsWith("/auth")) {
+        return;
+      }
       void verifySupportSession(session, setUser);
     });
     return () => {
       mounted = false;
       data.subscription.unsubscribe();
     };
-  }, [setUser]);
+  }, [location.pathname, setUser]);
 
   if (!ready) {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Loading support dashboard...</div>;
