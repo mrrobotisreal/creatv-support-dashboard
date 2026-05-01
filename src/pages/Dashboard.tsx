@@ -146,7 +146,14 @@ export default function DashboardPage() {
                     <Link to={`/tickets/${ticket.request_id}`} className="font-mono text-primary hover:underline">
                       {ticket.request_id.slice(0, 8)}
                     </Link>
+                    <p className="mt-1 font-semibold">{ticket.subject || "No subject"}</p>
                     <p className="mt-1 line-clamp-2 text-muted-foreground">{ticket.description}</p>
+                    {(ticket.prior_contact_email_ticket_count > 0 || ticket.prior_authenticated_user_ticket_count > 0) && (
+                      <p className="mt-1 text-xs text-amber-300">
+                        Prior tickets: {ticket.prior_contact_email_ticket_count} email
+                        {ticket.prior_authenticated_user_ticket_count > 0 ? ` · ${ticket.prior_authenticated_user_ticket_count} account` : ""}
+                      </p>
+                    )}
                   </td>
                   <td className="px-4 py-3 capitalize">{ticket.request_type}</td>
                   <td className="px-4 py-3">
