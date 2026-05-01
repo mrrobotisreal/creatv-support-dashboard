@@ -14,11 +14,18 @@ export type TicketSummary = {
   id: number;
   request_id: string;
   request_type: SupportRequestType;
+  subject: string;
   contact_email: string;
   description: string;
   status: SupportStatus;
+  rating?: number;
   requester_firebase_uid?: string;
   requester_email?: string;
+  requester_snapshot: Record<string, unknown>;
+  submission_geo: Record<string, unknown>;
+  submission_security: Record<string, unknown>;
+  prior_contact_email_ticket_count: number;
+  prior_authenticated_user_ticket_count: number;
   opened_by_support_tech_id?: string;
   assigned_support_tech_id?: string;
   details_s3_key: string;

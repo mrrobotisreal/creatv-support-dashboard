@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { ArrowLeft } from "lucide-react";
@@ -69,11 +70,33 @@ export default function TicketDetailPage() {
                 <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs capitalize">{detail.ticket.request_type}</span>
                 <span className="font-mono text-xs text-muted-foreground">{detail.ticket.request_id}</span>
               </div>
-              <h1 className="text-2xl font-bold">Ticket from {detail.ticket.contact_email}</h1>
+              <h1 className="text-2xl font-bold">{detail.ticket.subject || `Ticket from ${detail.ticket.contact_email}`}</h1>
               <p className="mt-2 text-sm text-muted-foreground">
                 Created {formatDistanceToNow(new Date(detail.ticket.created_at), { addSuffix: true })}
                 {detail.ticket.assigned_support_tech_id ? ` · Assigned to ${detail.ticket.assigned_support_tech_id}` : ""}
               </p>
+              <div className="mt-4 grid gap-3 text-sm md:grid-cols-2">
+                <InfoCard title="Requester">
+                  <InfoLine label="Contact email" value={detail.ticket.contact_email} />
+                  <InfoLine label="Account email" value={stringValue(detail.ticket.requester_snapshot.email) || detail.ticket.requester_email || "none"} />
+                  <InfoLine label="Username" value={stringValue(detail.ticket.requester_snapshot.username) || "none"} />
+                  <InfoLine label="User ID" value={stringValue(detail.ticket.requester_snapshot.user_id) || "none"} />
+                  <InfoLine label="Firebase UID" value={detail.ticket.requester_firebase_uid || stringValue(detail.ticket.requester_snapshot.firebase_uid) || "none"} />
+                  <InfoLine label="Premium" value={boolLabel(detail.ticket.requester_snapshot.is_premium)} />
+                  <InfoLine label="Partner" value={boolLabel(detail.ticket.requester_snapshot.is_partner)} />
+                  <InfoLine label="Verified" value={boolLabel(detail.ticket.requester_snapshot.is_verified)} />
+                </InfoCard>
+                <InfoCard title="Security context">
+                  <InfoLine label="Client IP" value={stringValue(detail.ticket.submission_geo.ip_address) || stringValue(detail.ticket.submission_security.client_ip) || "none"} />
+                  <InfoLine label="Location" value={[detail.ticket.submission_geo.city, detail.ticket.submission_geo.region, detail.ticket.submission_geo.country_code].map(stringValue).filter(Boolean).join(", ") || "none"} />
+                  <InfoLine label="Lat/Lon" value={latLon(detail.ticket.submission_geo)} />
+                  <InfoLine label="ASN" value={[detail.ticket.submission_geo.asn_number, detail.ticket.submission_geo.asn_org].map(stringValue).filter(Boolean).join(" · ") || "none"} />
+                  <InfoLine label="Email matches account" value={boolLabel(detail.ticket.submission_security.contact_email_matches_account_email)} />
+                  <InfoLine label="Prior email tickets" value={String(detail.ticket.prior_contact_email_ticket_count)} />
+                  <InfoLine label="Prior account tickets" value={String(detail.ticket.prior_authenticated_user_ticket_count)} />
+                  <InfoLine label="Rating" value={detail.ticket.rating ? `${detail.ticket.rating}/5` : "not rated"} />
+                </InfoCard>
+              </div>
               <div className="mt-6 whitespace-pre-wrap rounded-xl border border-border bg-background p-4 leading-7">{detail.ticket.description}</div>
             </div>
 
@@ -164,4 +187,40 @@ export default function TicketDetailPage() {
       )}
     </main>
   );
+}
+
+function InfoCard({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="rounded-xl border border-border bg-background p-3">
+      <h2 className="mb-2 text-sm font-semibold">{title}</h2>
+      <div className="space-y-1">{children}</div>
+    </div>
+  );
+}
+
+function InfoLine({ label, value }: { label: string; value: string }) {
+  return (
+    <p className="flex justify-between gap-3 text-xs">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="min-w-0 break-words text-right">{value}</span>
+    </p>
+  );
+}
+
+function stringValue(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  return "";
+}
+
+function boolLabel(value: unknown): string {
+  if (typeof value !== "boolean") return "unknown";
+  return value ? "yes" : "no";
+}
+
+function latLon(geo: Record<string, unknown>): string {
+  const lat = stringValue(geo.latitude);
+  const lon = stringValue(geo.longitude);
+  return lat && lon ? `${lat}, ${lon}` : "none";
 }
