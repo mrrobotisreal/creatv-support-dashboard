@@ -3,14 +3,14 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 
 import icon from "@/assets/support_icon.png";
 import { useSupportSession } from "@/hooks/use-support-session";
-import { supabase } from "@/integrations/supabase/client";
+import { signOut as firebaseSignOut } from "@/integrations/firebase/client";
 
 export function SupportShell() {
   const navigate = useNavigate();
   const { user, setUser } = useSupportSession();
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await firebaseSignOut();
     setUser(null);
     navigate("/auth", { replace: true });
   };

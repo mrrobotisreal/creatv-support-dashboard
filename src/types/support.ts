@@ -3,6 +3,7 @@ export type SupportRequestType = "question" | "help";
 
 export type SupportTech = {
   tech_id: string;
+  /** Firebase Auth UID (API field keeps its historical name). */
   supabase_user_id: string;
   email: string;
   display_name: string;

@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import icon from "@/assets/support_icon.png";
 import { useSupportSession } from "@/hooks/use-support-session";
-import { supabase } from "@/integrations/supabase/client";
+import { describeAuthError, signInWithPassword, signOut } from "@/integrations/firebase/client";
 import { getCurrentSupportTech } from "@/lib/supportApi";
 
 export default function AuthPage() {
@@ -20,24 +20,33 @@ export default function AuthPage() {
     event.preventDefault();
     setError("");
     setLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    let firebaseUser;
+    try {
+      firebaseUser = await signInWithPassword(email, password);
+    } catch (err) {
+      setLoading(false);
+      setError(describeAuthError(err, "Unable to sign in."));
+      return;
+    }
     setLoading(false);
-    if (error || !data.session?.user.email) {
-      setError(error?.message || "Unable to sign in.");
+    if (!firebaseUser.email) {
+      await signOut();
+      setError("Unable to sign in.");
       return;
     }
     try {
-      const tech = await getCurrentSupportTech(data.session.access_token);
+      const accessToken = await firebaseUser.getIdToken();
+      const tech = await getCurrentSupportTech(accessToken);
       setUser({
-        id: data.session.user.id,
-        email: data.session.user.email,
-        accessToken: data.session.access_token,
+        id: firebaseUser.uid,
+        email: firebaseUser.email,
+        accessToken,
         techID: tech.tech_id,
         displayName: tech.display_name,
         role: tech.role,
       });
     } catch (err) {
-      await supabase.auth.signOut();
+      await signOut();
       setError(err instanceof Error ? err.message : "This account is not authorized for the support dashboard.");
       return;
     }

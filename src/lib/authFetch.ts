@@ -1,29 +1,28 @@
-import { useSupportSession } from "@/hooks/use-support-session";
-import { supabase } from "@/integrations/supabase/client";
+import { getIdToken } from "@/integrations/firebase/client";
 
-async function resolveAccessToken(): Promise<string | null> {
-  const state = useSupportSession.getState();
-  if (state.user?.accessToken) {
-    return state.user.accessToken;
-  }
-  const { data, error } = await supabase.auth.getSession();
-  if (error) {
-    return null;
-  }
-  const session = data.session;
-  if (!session?.access_token || !session.user.email) {
-    return null;
-  }
-  return session.access_token;
-}
-
+/**
+ * Fetch with the signed-in staff member's Firebase ID token. The token is read
+ * from the Firebase SDK on every call (it is cached and refreshed by the SDK),
+ * so a long-lived dashboard tab never sends an expired bearer.
+ */
 export async function authFetch(input: RequestInfo | URL, init?: RequestInit) {
   const headers = new Headers(init?.headers ?? {});
   if (!headers.has("Authorization")) {
-    const token = await resolveAccessToken();
+    const token = await getIdToken();
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
   }
-  return fetch(input, { ...init, headers });
+  const response = await fetch(input, { ...init, headers });
+  if (response.status !== 401) {
+    return response;
+  }
+  // Token may have expired mid-flight — force a refresh and retry once.
+  const refreshed = await getIdToken(true);
+  if (!refreshed) {
+    return response;
+  }
+  const retryHeaders = new Headers(init?.headers ?? {});
+  retryHeaders.set("Authorization", `Bearer ${refreshed}`);
+  return fetch(input, { ...init, headers: retryHeaders });
 }

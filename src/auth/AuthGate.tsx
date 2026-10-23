@@ -2,21 +2,24 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import { useSupportSession } from "@/hooks/use-support-session";
-import { supabase } from "@/integrations/supabase/client";
+import { subscribeToIdToken, type FirebaseUser } from "@/integrations/firebase/client";
 import { getCurrentSupportTech } from "@/lib/supportApi";
-import type { Session } from "@supabase/supabase-js";
 
-async function verifySupportSession(session: Session | null, setUser: ReturnType<typeof useSupportSession.getState>["setUser"]) {
-  if (!session?.user.email || !session.access_token) {
+async function verifySupportSession(
+  firebaseUser: FirebaseUser | null,
+  setUser: ReturnType<typeof useSupportSession.getState>["setUser"],
+) {
+  if (!firebaseUser || firebaseUser.isAnonymous || !firebaseUser.email) {
     setUser(null);
     return;
   }
   try {
-    const tech = await getCurrentSupportTech(session.access_token);
+    const accessToken = await firebaseUser.getIdToken();
+    const tech = await getCurrentSupportTech(accessToken);
     setUser({
-      id: session.user.id,
-      email: session.user.email,
-      accessToken: session.access_token,
+      id: firebaseUser.uid,
+      email: firebaseUser.email,
+      accessToken,
       techID: tech.tech_id,
       displayName: tech.display_name,
       role: tech.role,
@@ -33,21 +36,21 @@ export function AuthGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getSession().then(async ({ data }) => {
+    // onIdTokenChanged emits the restored session immediately, then on every
+    // sign-in / sign-out / hourly token refresh.
+    const unsubscribe = subscribeToIdToken(async (firebaseUser) => {
       if (!mounted) return;
-      await verifySupportSession(data.session, setUser);
-      setReady(true);
-    });
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (location.pathname.startsWith("/auth")) {
+      if (location.pathname.startsWith("/auth") && ready) {
         return;
       }
-      void verifySupportSession(session, setUser);
+      await verifySupportSession(firebaseUser, setUser);
+      if (mounted) setReady(true);
     });
     return () => {
       mounted = false;
-      data.subscription.unsubscribe();
+      unsubscribe();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname, setUser]);
 
   if (!ready) {
